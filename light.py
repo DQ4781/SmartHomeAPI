@@ -7,7 +7,7 @@ light = Blueprint("light", __name__, url_prefix="/light")
 @light.route("/")
 def index():
     cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM light_devices WHERE user_id = %s", current_user_id)
+    cur.execute("SELECT * FROM light_devices WHERE user_id = %s", (current_user_id,))
     devices = cur.fetchall()
     return render_template("light.html", devices=devices)
 
@@ -40,6 +40,6 @@ def update_device():
 def delete_device():
     device_id = request.form.get("device_id")
     cur = mysql.connection.cursor()
-    cur.execute("DELETE FROM light_devices WHERE id = %s", device_id)
+    cur.execute("DELETE FROM light_devices WHERE id = %s", (device_id,))
     mysql.connection.commit()
     return redirect(url_for("light.index"))
