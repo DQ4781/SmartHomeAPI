@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from app import mysql
+from db import mysql
 
 auth = Blueprint("auth", __name__, url_prefix="/auth")
 

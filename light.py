@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
-from app import mysql
+from db import mysql
 
 light = Blueprint("light", __name__, url_prefix="/light")
 
