@@ -16,13 +16,14 @@ mysql = MySQL(app)
 
 
 import auth
+import forms
 import home
 import light
 import thermostat
 import profiles
 
 
-app.register_blueprint(auth.auth)
+app.register_blueprint(auth.register)
 app.register_blueprint(home.home)
 app.register_blueprint(light.light)
 app.register_blueprint(thermostat.thermostat)
