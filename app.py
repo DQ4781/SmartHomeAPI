@@ -5,6 +5,9 @@ from flask_mysqldb import MySQL
 app = Flask(__name__)
 
 
+# Secret Key for Session Managment
+app.secret_key = "thisisasecretkey"
+
 # DB CONNECTION STUFF: TODO AT A LATER TIME
 
 app.config["MYSQL_USER"] = "root"
