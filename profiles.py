@@ -11,3 +11,19 @@ def index():
     cur.execute("SELECT * FROM users WHERE id = %s", (current_user_id,))
     user_details = cur.fetchone()
     return render_template("profile.html", user=user_details)
+
+
+@profile.route("/update", methods=["POST"])
+def update():
+    current_user_id = session.get("user_id")
+    name = request.form.get("name")
+    email = request.form.get("email")
+    password = request.form.get("password")
+    cur = mysql.connection.cursor()
+    cur.execute(
+        "UPDATE users SET name = %s, email = %s, password = %s WHERE id = %s",
+        (name, email, password, current_user_id),
+    )
+    mysql.connection.commit()
+    flash("Profile updated successfully!")
+    return redirect(url_for("profile.index"))
