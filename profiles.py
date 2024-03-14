@@ -27,3 +27,14 @@ def update():
     mysql.connection.commit()
     flash("Profile updated successfully!")
     return redirect(url_for("profile.index"))
+
+
+@profile.route("/delete", methods=["POST"])
+def delete():
+    current_user_id = session.get("user_id")
+    cur = mysql.connection.cursor()
+    cur.execute("DELETE FROM users WHERE id = %s", (current_user_id,))
+    mysql.connection.commit()
+    session.pop("user_id", None)
+    flash("Account deleted successfully!")
+    return redirect(url_for("auth.login"))
