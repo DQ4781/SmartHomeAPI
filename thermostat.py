@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, session
 from app import mysql
 
 thermostat = Blueprint("thermostat", __name__, url_prefix="/thermostat")
@@ -7,6 +7,7 @@ thermostat = Blueprint("thermostat", __name__, url_prefix="/thermostat")
 @thermostat.route("/")
 def index():
     # Fetch connected thermostat devices from the database
+    current_user_id = session.get("user_id")
     cur = mysql.connection.cursor()
     cur.execute(
         "SELECT * FROM thermostat_devices WHERE user_id = %s", (current_user_id,)
@@ -18,6 +19,7 @@ def index():
 @thermostat.route("/add", methods=["POST"])
 def add_device():
     room = request.form.get("room")
+    current_user_id = session.get("user_id")
     # Add the new device to the database
     cur = mysql.connection.cursor()
     cur.execute(

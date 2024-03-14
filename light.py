@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, session
 from app import mysql
 
 light = Blueprint("light", __name__, url_prefix="/light")
@@ -6,6 +6,7 @@ light = Blueprint("light", __name__, url_prefix="/light")
 
 @light.route("/")
 def index():
+    current_user_id = session.get("user_id")
     cur = mysql.connection.cursor()
     cur.execute("SELECT * FROM light_devices WHERE user_id = %s", (current_user_id,))
     devices = cur.fetchall()
@@ -14,6 +15,7 @@ def index():
 
 @light.route("/add", methods=["POST"])
 def add_device():
+    current_user_id = session.get("user_id")
     room = request.form.get("room")
     cur = mysql.connection.cursor()
     cur.execute(
