@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Thermostat Control</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        .page-header {
+            padding: 20px;
+            background-color: #f0f8ff;
+            margin-bottom: 20px;
+        }
+        .device-card {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1>Thermostat Control</h1>
+        </div>
+        <div class="mt-3">
+            <form action="{{ url_for('thermostat.add_device') }}" method="post" class="mb-3">
+                <div class="form-row align-items-center">
+                    <div class="col-auto">
+                        <label for="room" class="sr-only">Room</label>
+                        <select name="room" id="room" class="form-control">
+                            <option value="bedroom">Bedroom</option>
+                            <option value="kitchen">Kitchen</option>
+                            <option value="living_room">Living Room</option>
+                            <option value="office">Office</option>
+                            <option value="hallway">Hallway</option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Add Device</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        {% if devices %}
+            {% for device in devices %}
+                <div class="card device-card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ device[2] | capitalize }}</h5>
+                        <form action="{{ url_for('thermostat.update_device') }}" method="post" class="mb-2">
+                            <input type="hidden" name="device_id" value="{{ device[0] }}">
+                            <label for="setting-{{ device[0] }}">Temperature (50-100°):</label>
+                            <input type="range" name="setting" id="setting-{{ device[0] }}" min="50" max="100" value="{{ device[3] }}" class="form-control-range">
+                            <p>Current Temperature: {{ device[3] }}°</p>
+                            <button type="submit" class="btn btn-sm btn-success">Update</button>
+                        </form>
+                        <form action="{{ url_for('thermostat.delete_device') }}" method="post">
+                            <input type="hidden" name="device_id" value="{{ device[0] }}">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No connected thermostat devices at the moment.</p>
+        {% endif %}
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>
