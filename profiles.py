@@ -16,13 +16,13 @@ def index():
 @profile.route("/update", methods=["POST"])
 def update():
     current_user_id = session.get("user_id")
-    name = request.form.get("name")
+    username = request.form.get("username")
     email = request.form.get("email")
     password = request.form.get("password")
     cur = mysql.connection.cursor()
     cur.execute(
-        "UPDATE users SET name = %s, email = %s, password = %s WHERE id = %s",
-        (name, email, password, current_user_id),
+        "UPDATE users SET username = %s, email = %s, password = %s WHERE id = %s",
+        (username, email, password, current_user_id),
     )
     mysql.connection.commit()
     flash("Profile updated successfully!")
