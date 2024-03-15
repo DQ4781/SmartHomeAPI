@@ -31,5 +31,10 @@ app.register_blueprint(thermostat)
 app.register_blueprint(profile)
 
 
+@app.route("/")
+def index():
+    return redirect(url_for("auth.login"))
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=8081)
