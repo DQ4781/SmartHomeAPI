@@ -47,7 +47,7 @@ def login():
         )
         account = cur.fetchone()
         if account:
-            session["user_id"] = account["id"]  # Store user ID in session
+            session["user_id"] = account[0]  # Store user ID in session
             return redirect(url_for("home.index"))
         else:
             msg = "Incorrect username or password!"
