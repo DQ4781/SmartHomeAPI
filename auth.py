@@ -38,7 +38,7 @@ def register():
 @auth.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form["username]"]
+        username = request.form["username"]
         password = request.form["password"]
         cur = mysql.connection.cursor()
         cur.execute(
