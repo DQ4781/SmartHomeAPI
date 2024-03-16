@@ -12,8 +12,7 @@ def register():
         username = request.form["username"]
         password = request.form["password"]
         email = request.form["email"]
-
-        # Basic validation (you can expand this as needed)
+        
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             flash("Invalid email address.")
             return render_template("register.html")
