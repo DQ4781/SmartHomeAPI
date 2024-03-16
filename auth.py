@@ -1,9 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import Length, DataRequired, EqualTo, Email, ValidationError, session, flash
 from db import mysql
-from forms import *
 import re
 
 auth = Blueprint("auth", __name__, url_prefix="/auth")
@@ -26,6 +23,11 @@ def register():
         account = cur.fetchone()
         if account:
             flash("Username already exists.")
+            return render_template("register.html")
+        cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+        account_email = cur.fetchone()
+        if account_email:
+            flash("This email is in use.")
             return render_template("register.html")
 
         cur.execute(
@@ -63,12 +65,3 @@ def login():
 def logout():
     session.pop("user_id", None)
     return redirect(url_for("auth.login"))
-@auth.route("/register", methods=["GET", "POST"])
-def register():
-    form = RegisterForm()
-    if form.validate_on_submit():
-        return redirect(url_for("auth.home"))
-    if form.errors!={}:
-        for err_msg in form.errors.values():
-            flash(f'There was an error with creating a user: {err_msg}', category='danger')
-    return render_template('register.html',form=form)
