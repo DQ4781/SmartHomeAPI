@@ -39,7 +39,10 @@ def add_device():
         (current_user_id, room, 50),
     )
     mysql.connection.commit()
-    return jsonify({"message": "Thermostat Device added successfully"}), 200
+    if request.is_json:
+        return jsonify({"message": "Thermostat Device added successfully"}), 200
+    else:
+        return redirect(url_for("thermostat.index"))
 
 
 @thermostat.route("/update", methods=["POST"])
@@ -57,7 +60,10 @@ def update_device():
         "UPDATE thermostat_devices SET setting = %s WHERE id = %s", (setting, device_id)
     )
     mysql.connection.commit()
-    return jsonify({"message": "Thermostat Device updated successfully"}), 200
+    if request.is_json:
+        return jsonify({"message": "Thermostat Device updated successfully"}), 200
+    else:
+        return redirect(url_for("thermostat.index"))
 
 
 @thermostat.route("/delete", methods=["POST"])
@@ -71,4 +77,7 @@ def delete_device():
     cur = mysql.connection.cursor()
     cur.execute("DELETE FROM thermostat_devices WHERE id = %s", (device_id,))
     mysql.connection.commit()
-    return jsonify({"message": "Thermostat Device deleted successfully"}), 200
+    if request.is_json:
+        return jsonify({"message": "Thermostat Device deleted successfully"}), 200
+    else:
+        return redirect(url_for("thermostat.index"))

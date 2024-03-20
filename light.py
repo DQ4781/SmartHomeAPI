@@ -35,7 +35,10 @@ def add_device():
         (current_user_id, room, 0),
     )
     mysql.connection.commit()
-    return jsonify({"message": "Light Device added successfully"}), 200
+    if request.is_json:
+        return jsonify({"message": "Light Device added successfully"}), 200
+    else:
+        return redirect(url_for("light.index"))
 
 
 @light.route("/update", methods=["POST"])
@@ -52,7 +55,10 @@ def update_device():
         "UPDATE light_devices SET setting = %s WHERE id = %s", (setting, device_id)
     )
     mysql.connection.commit()
-    return jsonify({"message": "Light device updated successfully"}), 200
+    if request.is_json:
+        return jsonify({"message": "Light device updated successfully"}), 200
+    else:
+        return redirect(url_for("light.index"))
 
 
 @light.route("/delete", methods=["POST"])
@@ -65,4 +71,7 @@ def delete_device():
     cur = mysql.connection.cursor()
     cur.execute("DELETE FROM light_devices WHERE id = %s", (device_id,))
     mysql.connection.commit()
-    return jsonify({"message": "Light Device deleted successfully"}), 200
+    if request.is_json:
+        return jsonify({"message": "Light Device deleted successfully"}), 200
+    else:
+        return redirect(url_for("light.index"))
