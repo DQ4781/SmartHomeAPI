@@ -15,7 +15,7 @@ def register():
         # Basic validation (you can expand this as needed)
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             flash("Invalid email address.")
-            return render_template("register.html")
+            return render_template("register.html"), 422
 
         cur = mysql.connection.cursor()
         cur.execute("SELECT * FROM users WHERE username = %s", (username,))
@@ -30,7 +30,7 @@ def register():
         )
         mysql.connection.commit()
         flash("Registration successful! Please log in.")
-        return redirect(url_for("auth.login"))
+        return redirect(url_for("auth.login")), 200
 
     return render_template("register.html")
 
