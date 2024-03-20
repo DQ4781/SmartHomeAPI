@@ -22,7 +22,7 @@ def register():
         account = cur.fetchone()
         if account:
             flash("Username already exists.")
-            return render_template("register.html")
+            return render_template("register.html"), 409
 
         cur.execute(
             "INSERT INTO users (username, password, email) VALUES (%s, %s, %s)",
@@ -51,7 +51,7 @@ def login():
             return redirect(url_for("home.index"))
         else:
             msg = "Incorrect username or password!"
-            return render_template("login.html", msg=msg)
+            return render_template("login.html", msg=msg), 401
     return render_template("login.html")
 
 
