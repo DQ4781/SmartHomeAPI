@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Home Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-4">Welcome to the Smart Home Dashboard</h1>
+        <p class="lead">Please select one of the following:</p>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card" style="cursor: pointer;" onclick="window.location.href='{{ url_for('light.index') }}'">
+                    <div class="card-body text-center">
+                        <i class="fas fa-lightbulb fa-3x mb-3"></i>
+                        <h5 class="card-title">Lighting</h5>
+                        <p class="card-text">Control and manage your lighting fixtures.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card" style="cursor: pointer;" onclick="window.location.href='{{ url_for('thermostat.index') }}'">
+                    <div class="card-body text-center">
+                        <i class="fas fa-thermometer-half fa-3x mb-3"></i>
+                        <h5 class="card-title">Thermostats</h5>
+                        <p class="card-text">Adjust the temperature settings of your rooms.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card" style="cursor: pointer;" onclick="window.location.href='{{ url_for('profile.index') }}'">
+                    <div class="card-body text-center">
+                        <i class="fas fa-cog fa-3x mb-3"></i>
+                        <h5 class="card-title">Profile</h5>
+                        <p class="card-text">View and update your personal details.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>
