@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask_wtf import FlaskForm
 from db import mysql
 import re
 
@@ -11,8 +12,7 @@ def register():
         username = request.form["username"]
         password = request.form["password"]
         email = request.form["email"]
-
-        # Basic validation (you can expand this as needed)
+        
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             flash("Invalid email address.")
             return render_template("register.html"), 422
@@ -23,6 +23,12 @@ def register():
         if account:
             flash("Username already exists.")
             return render_template("register.html"), 409
+
+        cur.execute("SELECT * FROM users WHERE email = %s", (email,))
+        account_email = cur.fetchone()
+        if account_email:
+            flash("This email is in use.")
+            return render_template("register.html"), 409 
 
         cur.execute(
             "INSERT INTO users (username, password, email) VALUES (%s, %s, %s)",
