@@ -15,19 +15,20 @@ def register():
         
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             flash("Invalid email address.")
-            return render_template("register.html")
+            return render_template("register.html"), 422
 
         cur = mysql.connection.cursor()
         cur.execute("SELECT * FROM users WHERE username = %s", (username,))
         account = cur.fetchone()
         if account:
             flash("Username already exists.")
-            return render_template("register.html")
+            return render_template("register.html"), 409
+
         cur.execute("SELECT * FROM users WHERE email = %s", (email,))
         account_email = cur.fetchone()
         if account_email:
             flash("This email is in use.")
-            return render_template("register.html")
+            return render_template("register.html"), 409 
 
         cur.execute(
             "INSERT INTO users (username, password, email) VALUES (%s, %s, %s)",
@@ -35,7 +36,7 @@ def register():
         )
         mysql.connection.commit()
         flash("Registration successful! Please log in.")
-        return redirect(url_for("auth.login"))
+        return redirect(url_for("auth.login")), 200
 
     return render_template("register.html")
 
@@ -56,7 +57,7 @@ def login():
             return redirect(url_for("home.index"))
         else:
             msg = "Incorrect username or password!"
-            return render_template("login.html", msg=msg)
+            return render_template("login.html", msg=msg), 401
     return render_template("login.html")
 
 

@@ -1,4 +1,12 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    session,
+    jsonify,
+)
 from db import mysql
 
 light = Blueprint("light", __name__, url_prefix="/light")
@@ -15,33 +23,55 @@ def index():
 
 @light.route("/add", methods=["POST"])
 def add_device():
+    if request.is_json:
+        data = request.json
+        room = data.get("room")
+    else:
+        room = request.form.get("room")
     current_user_id = session.get("user_id")
-    room = request.form.get("room")
     cur = mysql.connection.cursor()
     cur.execute(
         "INSERT INTO light_devices (user_id, room, setting) VALUES (%s, %s, %s)",
         (current_user_id, room, 0),
     )
     mysql.connection.commit()
-    return redirect(url_for("light.index"))
+    if request.is_json:
+        return jsonify({"message": "Light Device added successfully"}), 200
+    else:
+        return redirect(url_for("light.index"))
 
 
 @light.route("/update", methods=["POST"])
 def update_device():
-    device_id = request.form.get("device_id")
-    setting = request.form.get("setting")
+    if request.is_json:
+        data = request.json
+        device_id = data.get("device_id")
+        setting = data.get("setting")
+    else:
+        device_id = request.form.get("device_id")
+        setting = request.form.get("setting")
     cur = mysql.connection.cursor()
     cur.execute(
         "UPDATE light_devices SET setting = %s WHERE id = %s", (setting, device_id)
     )
     mysql.connection.commit()
-    return redirect(url_for("light.index"))
+    if request.is_json:
+        return jsonify({"message": "Light device updated successfully"}), 200
+    else:
+        return redirect(url_for("light.index"))
 
 
 @light.route("/delete", methods=["POST"])
 def delete_device():
-    device_id = request.form.get("device_id")
+    if request.is_json:
+        data = request.json
+        device_id = data.get("device_id")
+    else:
+        device_id = request.form.get("device_id")
     cur = mysql.connection.cursor()
     cur.execute("DELETE FROM light_devices WHERE id = %s", (device_id,))
     mysql.connection.commit()
-    return redirect(url_for("light.index"))
+    if request.is_json:
+        return jsonify({"message": "Light Device deleted successfully"}), 200
+    else:
+        return redirect(url_for("light.index"))
