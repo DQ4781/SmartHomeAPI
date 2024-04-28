@@ -12,12 +12,28 @@
         .device-card {
             margin-bottom: 20px;
         }
+        .button-group {
+            display: flex;
+            align-items: center;
+        }
+        .button-group button {
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="page-header">
-            <h1>Lighting Control</h1>
+        <div class="row">
+            <div class="col">
+                <div class="page-header">
+                    <h1>Lighting Control</h1>
+                </div>
+            </div>
+        </div>
+        <div class="col-auto">
+            <form action="{{ url_for('home.index') }}" method="get">
+                <button type="submit" class="btn btn-primary">Home</button>
+            </form>
         </div>
         <div class="mt-3">
             <form action="{{ url_for('light.add_device') }}" method="post" class="mb-3">
@@ -39,27 +55,49 @@
             </form>
         </div>
         {% if devices %}
-            {% for device in devices %}
-                <div class="card device-card">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ device[2] | capitalize }}</h5>
-                        <form action="{{ url_for('light.update_device') }}" method="post" class="mb-2">
-                            <input type="hidden" name="device_id" value="{{ device[0] }}">
-                            <label for="setting-{{ device[0] }}">Intensity (0-100):</label>
-                            <input type="range" name="setting" id="setting-{{ device[0] }}" min="0" max="100" value="{{ device[3] }}" class="form-control-range">
-                            <p>Current Intensity: {{ device[3] }}</p>
-                            <button type="submit" class="btn btn-sm btn-success">Update</button>
+        {% for device in devices %}
+            <div class="card device-card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ device.room | capitalize }}</h5>
+                    <form action="{{ url_for('light.update_device') }}" method="post" class="mb-2">
+                        <input type="hidden" name="device_id" value="{{ device.id }}">
+                        <label for="setting-{{ device.id }}">Intensity (0-100):</label>
+                        <input type="range" name="setting" id="setting-{{ device.id }}" min="0" max="100" value="{{ device.setting }}" class="form-control-range">
+                        <p>Current Intensity: {{ device.setting }}</p>
+                        <div class="row">
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-sm btn-success">Update Device</button>
+                            </div>
+                        </div>
+                    </form>
+                    <form action="{{ url_for('light.delete_device') }}" method="post" class="mb-2">
+                        <input type="hidden" name="device_id" value="{{ device.id }}">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete Device</button>
+                    </form>
+                    <form action="{{ url_for('light.upload_file') }}" method="post" enctype="multipart/form-data" class="mb-2">
+                        <input type="hidden" name="device_id" value="{{ device.id }}">
+                        <input type="file" name="file" class="form-control-file">
+                        <button type="submit" class="btn btn-primary">Upload File</button>
+                    </form>
+                    {% if device.files %}
+                        <form action="{{ url_for('light.remove_file') }}" method="post" class="mb-2">
+                            <input type="hidden" name="device_id" value="{{ device.id }}">
+                            <select name="file_to_remove" class="form-control">
+                                {% for file in device.files %}
+                                    <option value="{{ file }}">{{ file }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-danger">Remove File</button>
                         </form>
-                        <form action="{{ url_for('light.delete_device') }}" method="post">
-                            <input type="hidden" name="device_id" value="{{ device[0] }}">
-                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                        </form>
-                    </div>
+                    {% else %}
+                        <p>No files uploaded yet.</p>
+                    {% endif %}
                 </div>
-            {% endfor %}
-        {% else %}
-            <p>No connected light devices at the moment.</p>
-        {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No connected light devices at the moment.</p>
+    {% endif %}    
     </div>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
