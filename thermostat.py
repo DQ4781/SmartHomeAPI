@@ -6,21 +6,23 @@ from flask import (
     url_for,
     session,
     jsonify,
+    abort
 )
-from db import mysql
+from pymongo import MongoClient
+from bson import ObjectId
+import logging 
 
 thermostat = Blueprint("thermostat", __name__, url_prefix="/thermostat")
 
+# Connect to MongoDB
+client = MongoClient("mongodb://localhost:27017/")
+db = client.smart_home 
 
 @thermostat.route("/")
 def index():
-    # Fetch connected thermostat devices from the database
     current_user_id = session.get("user_id")
-    cur = mysql.connection.cursor()
-    cur.execute(
-        "SELECT * FROM thermostat_devices WHERE user_id = %s", (current_user_id,)
-    )
-    devices = cur.fetchall()
+    # Query MongoDB for thermostat devices
+    devices = list(db.thermostat_devices.find({"user_id": current_user_id}))
     return render_template("thermostat.html", devices=devices)
 
 
@@ -33,17 +35,13 @@ def add_device():
         room = request.form.get("room")
     current_user_id = session.get("user_id")
     # Add the new device to the database
-    cur = mysql.connection.cursor()
-    cur.execute(
-        "INSERT INTO thermostat_devices (user_id, room, setting) VALUES (%s, %s, %s)",
-        (current_user_id, room, 50),
+    db.thermostat_devices.insert_one(
+        {"user_id": current_user_id, "room": room, "setting": 50}
     )
-    mysql.connection.commit()
     if request.is_json:
         return jsonify({"message": "Thermostat Device added successfully"}), 200
     else:
         return redirect(url_for("thermostat.index"))
-
 
 @thermostat.route("/update", methods=["POST"])
 def update_device():
@@ -54,18 +52,16 @@ def update_device():
     else:
         device_id = request.form.get("device_id")
         setting = request.form.get("setting")
-    # Update the device setting in the database
-    cur = mysql.connection.cursor()
-    cur.execute(
-        "UPDATE thermostat_devices SET setting = %s WHERE id = %s", (setting, device_id)
-    )
-    mysql.connection.commit()
+
+    # Convert device_id to ObjectId
+    device_id = ObjectId(device_id)
+    # Update thermostat device in MongoDB
+    db.thermostat_devices.update_one({"_id": device_id}, {"$set": {"setting": setting}})
     if request.is_json:
-        return jsonify({"message": "Thermostat Device updated successfully"}), 200
+        return jsonify({"message": "Thermostat device updated successfully"}), 200
     else:
         return redirect(url_for("thermostat.index"))
-
-
+    
 @thermostat.route("/delete", methods=["POST"])
 def delete_device():
     if request.is_json:
@@ -73,10 +69,10 @@ def delete_device():
         device_id = data.get("device_id")
     else:
         device_id = request.form.get("device_id")
-    # Delete the device from the database
-    cur = mysql.connection.cursor()
-    cur.execute("DELETE FROM thermostat_devices WHERE id = %s", (device_id,))
-    mysql.connection.commit()
+    # Convert device_id to ObjectId
+    device_id = ObjectId(device_id)
+    # Delete light device from MongoDB
+    db.thermostat_devices.delete_one({"_id": device_id})
     if request.is_json:
         return jsonify({"message": "Thermostat Device deleted successfully"}), 200
     else:

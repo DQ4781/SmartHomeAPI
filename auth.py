@@ -1,10 +1,13 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-from flask_wtf import FlaskForm
-from db import mysql
+from pymongo import MongoClient
 import re
 
 auth = Blueprint("auth", __name__, url_prefix="/auth")
 
+# MongoDB connection
+client = MongoClient("mongodb://localhost:27017/") # Assuming MongoDB is running locally on the default port
+db = client.smart_home  # Accessing the "smart_home" database
+users_collection = db.users  # Accessing the "users" collection
 
 @auth.route("/register", methods=["GET", "POST"])
 def register():
@@ -12,56 +15,49 @@ def register():
         username = request.form["username"]
         password = request.form["password"]
         email = request.form["email"]
-        
+
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             flash("Invalid email address.")
             return render_template("register.html"), 422
 
-        cur = mysql.connection.cursor()
-        cur.execute("SELECT * FROM users WHERE username = %s", (username,))
-        account = cur.fetchone()
-        if account:
+        # Check if username exists
+        if users_collection.find_one({"username": username}):
             flash("Username already exists.")
             return render_template("register.html"), 409
 
-        cur.execute("SELECT * FROM users WHERE email = %s", (email,))
-        account_email = cur.fetchone()
-        if account_email:
+        # Check if email exists
+        if users_collection.find_one({"email": email}):
             flash("This email is in use.")
-            return render_template("register.html"), 409 
+            return render_template("register.html"), 409
 
-        cur.execute(
-            "INSERT INTO users (username, password, email) VALUES (%s, %s, %s)",
-            (username, password, email),
-        )
-        mysql.connection.commit()
+        # Insert user into the collection
+        user_data = {"username": username, "password": password, "email": email}
+        users_collection.insert_one(user_data)
         flash("Registration successful! Please log in.")
         return redirect(url_for("auth.login")), 200
 
     return render_template("register.html")
-
 
 @auth.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        cur = mysql.connection.cursor()
-        cur.execute(
-            "SELECT * FROM users WHERE username = %s AND password = %s",
-            (username, password),
-        )
-        account = cur.fetchone()
+
+        # Check if user exists with provided credentials
+        account = users_collection.find_one({"username": username, "password": password})
+
         if account:
-            session["user_id"] = account[0]  # Store user ID in session
+            # Convert ObjectId to string before storing in the session
+            session["user_id"] = str(account["_id"])
             return redirect(url_for("home.index"))
         else:
             msg = "Incorrect username or password!"
             return render_template("login.html", msg=msg), 401
     return render_template("login.html")
 
-
 @auth.route("/logout")
 def logout():
     session.pop("user_id", None)
     return redirect(url_for("auth.login"))
+

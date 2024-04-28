@@ -19,6 +19,11 @@
         <div class="page-header">
             <h1>Thermostat Control</h1>
         </div>
+        <div class="col-auto">
+            <form action="{{ url_for('home.index') }}" method="get">
+                <button type="submit" class="btn btn-primary">Home</button>
+            </form>
+        </div>
         <div class="mt-3">
             <form action="{{ url_for('thermostat.add_device') }}" method="post" class="mb-3">
                 <div class="form-row align-items-center">
@@ -42,16 +47,16 @@
             {% for device in devices %}
                 <div class="card device-card">
                     <div class="card-body">
-                        <h5 class="card-title">{{ device[2] | capitalize }}</h5>
+                        <h5 class="card-title">{{ device.room | capitalize }}</h5>
                         <form action="{{ url_for('thermostat.update_device') }}" method="post" class="mb-2">
-                            <input type="hidden" name="device_id" value="{{ device[0] }}">
-                            <label for="setting-{{ device[0] }}">Temperature (50-100°):</label>
-                            <input type="range" name="setting" id="setting-{{ device[0] }}" min="50" max="100" value="{{ device[3] }}" class="form-control-range">
-                            <p>Current Temperature: {{ device[3] }}°</p>
+                            <input type="hidden" name="device_id" value="{{ device._id }}">
+                            <label for="setting-{{ device._id }}">Temperature (50-100°):</label>
+                            <input type="range" name="setting" id="setting-{{ device._id }}" min="50" max="100" value="{{ device.setting }}" class="form-control-range">
+                            <p>Current Temperature: {{ device.setting }}°</p>
                             <button type="submit" class="btn btn-sm btn-success">Update</button>
                         </form>
                         <form action="{{ url_for('thermostat.delete_device') }}" method="post">
-                            <input type="hidden" name="device_id" value="{{ device[0] }}">
+                            <input type="hidden" name="device_id" value="{{ device._id }}">
                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                         </form>
                     </div>
