@@ -7,6 +7,7 @@ from flask import (
     session,
     flash,
     jsonify,
+    make_response
 )
 from pymongo import MongoClient
 from bson import ObjectId
@@ -99,4 +100,10 @@ def delete():
         else:
             flash("An error occurred while deleting the account.")
             return redirect(url_for("profile.index"))
-
+        
+@profile.route("/toggle_theme", methods=["POST"])
+def toggle_theme():
+    theme = request.form.get('theme', 'light')
+    resp = make_response(redirect(url_for('profile.index')))
+    resp.set_cookie('theme', theme, max_age=3*24*60*60, path='/')  # Set cookie for 3 days
+    return resp

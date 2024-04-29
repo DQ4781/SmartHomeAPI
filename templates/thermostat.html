@@ -69,5 +69,53 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var theme = document.cookie.split('; ').find(row => row.startsWith('theme='));
+            if (theme && theme.split('=')[1] === 'dark') {
+                document.body.classList.add('dark-mode');
+                var cards = document.querySelectorAll('.card');
+                cards.forEach(card => card.classList.add('dark-mode'));
+            }
+        });
+        </script>
+    <style>
+        .page-header {
+            padding: 20px;
+            background-color: #f8f9fa; /* Light background for light mode */
+            margin-bottom: 20px;
+        }
+        .device-card {
+            margin-bottom: 20px;
+        }
+        .button-group {
+            display: flex;
+            align-items: center;
+        }
+        .button-group button {
+            margin-right: 5px;
+        }
+    
+        /* Basic Dark Mode Styles */
+        body.dark-mode {
+            background-color: #343a40;
+            color: #ffffff;
+        }
+        .dark-mode .card {
+            background-color: #424242;
+            color: #ffffff;
+        }
+        .dark-mode .btn {
+            background-color: #585858;
+            border-color: #6c757d;
+        }
+        .dark-mode .form-control {
+            background-color: #555555;
+            color: white;
+        }
+        .dark-mode .page-header {
+            background-color: #333; /* Darker background for better visibility */
+        }
+    </style>    
 </body>
 </html>
