@@ -7,10 +7,11 @@ from flask import (
     session,
     flash,
     jsonify,
-    make_response
+    make_response,
 )
 from pymongo import MongoClient
 from bson import ObjectId
+from jwt_token import token_required
 
 profile = Blueprint("profile", __name__, url_prefix="/profile")
 
@@ -18,8 +19,10 @@ profile = Blueprint("profile", __name__, url_prefix="/profile")
 client = MongoClient("mongodb://localhost:27017/")
 db = client.smart_home
 
+
 @profile.route("/")
-def index():
+@token_required
+def index(current_user):
     current_user_id = session.get("user_id")
     # Convert current_user_id to ObjectId
     user_id_object = ObjectId(current_user_id)
@@ -29,7 +32,8 @@ def index():
 
 
 @profile.route("/update", methods=["POST"])
-def update():
+@token_required
+def update(current_user):
     current_user_id = session.get("user_id")
     if request.is_json:
         data = request.json
@@ -49,10 +53,7 @@ def update():
 
     try:
         # Update user details in MongoDB
-        result = db.users.update_one(
-            {"_id": user_id_object},
-            {"$set": update_data}
-        )
+        result = db.users.update_one({"_id": user_id_object}, {"$set": update_data})
         if result.matched_count == 0:
             raise ValueError("User not found")
 
@@ -72,14 +73,17 @@ def update():
 
 
 @profile.route("/delete", methods=["POST"])
-def delete():
+@token_required
+def delete(current_user):
     current_user_id = session.get("user_id")
     user_id_object = ObjectId(current_user_id)
-    user_device_ids = [device["_id"] for device in db.light_devices.find({"user_id": current_user_id})]
+    user_device_ids = [
+        device["_id"] for device in db.light_devices.find({"user_id": current_user_id})
+    ]
 
     try:
         # Delete user-related data from other collections
-        db.device_files.delete_many({"device_id": {"$in": user_device_ids}}) 
+        db.device_files.delete_many({"device_id": {"$in": user_device_ids}})
         db.light_devices.delete_many({"user_id": current_user_id})
         db.thermostat_devices.delete_many({"user_id": current_user_id})
 
@@ -100,10 +104,14 @@ def delete():
         else:
             flash("An error occurred while deleting the account.")
             return redirect(url_for("profile.index"))
-        
+
+
 @profile.route("/toggle_theme", methods=["POST"])
-def toggle_theme():
-    theme = request.form.get('theme', 'light')
-    resp = make_response(redirect(url_for('profile.index')))
-    resp.set_cookie('theme', theme, max_age=3*24*60*60, path='/')  # Set cookie for 3 days
+@token_required
+def toggle_theme(current_user):
+    theme = request.form.get("theme", "light")
+    resp = make_response(redirect(url_for("profile.index")))
+    resp.set_cookie(
+        "theme", theme, max_age=3 * 24 * 60 * 60, path="/"
+    )  # Set cookie for 3 days
     return resp

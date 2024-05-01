@@ -6,11 +6,12 @@ from flask import (
     url_for,
     session,
     jsonify,
-    flash
+    flash,
 )
 import os
 from pymongo import MongoClient
 from bson import ObjectId  # Import ObjectId
+from jwt_token import token_required
 
 light = Blueprint("light", __name__, url_prefix="/light")
 
@@ -22,12 +23,14 @@ if not os.path.exists(UPLOAD_FOLDER):
 client = MongoClient("mongodb://localhost:27017/")
 db = client.smart_home  # Use your database name
 
+
 @light.route("/")
-def index():
+@token_required
+def index(current_user):
     current_user_id = session.get("user_id")
     # Query MongoDB for light devices
     devices = db.light_devices.find({"user_id": current_user_id})
-    
+
     device_dicts = []
     for device in devices:
         # Query MongoDB for device files
@@ -37,15 +40,16 @@ def index():
             "user_id": device["user_id"],
             "room": device["room"],
             "setting": device["setting"],
-            "files": [file["filename"] for file in files]
+            "files": [file["filename"] for file in files],
         }
         device_dicts.append(device_dict)
-        
+
     return render_template("light.html", devices=device_dicts)
 
 
 @light.route("/add", methods=["POST"])
-def add_device():
+@token_required
+def add_device(current_user):
     if request.is_json:
         data = request.json
         room = data.get("room")
@@ -53,7 +57,9 @@ def add_device():
         room = request.form.get("room")
     current_user_id = session.get("user_id")
     # Insert new light device into MongoDB
-    db.light_devices.insert_one({"user_id": current_user_id, "room": room, "setting": 0})
+    db.light_devices.insert_one(
+        {"user_id": current_user_id, "room": room, "setting": 0}
+    )
     if request.is_json:
         return jsonify({"message": "Light Device added successfully"}), 200
     else:
@@ -61,7 +67,8 @@ def add_device():
 
 
 @light.route("/update", methods=["POST"])
-def update_device():
+@token_required
+def update_device(current_user):
     if request.is_json:
         data = request.json
         device_id = data.get("device_id")
@@ -78,8 +85,10 @@ def update_device():
     else:
         return redirect(url_for("light.index"))
 
+
 @light.route("/delete", methods=["POST"])
-def delete_device():
+@token_required
+def delete_device(current_user):
     if request.is_json:
         data = request.json
         device_id = data.get("device_id")
@@ -96,7 +105,8 @@ def delete_device():
 
 
 @light.route("/upload", methods=["POST"])
-def upload_file():
+@token_required
+def upload_file(current_user):
     device_id = request.form.get("device_id")
     file = request.files["file"]
     if file:
@@ -104,13 +114,16 @@ def upload_file():
         file_path = os.path.join(UPLOAD_FOLDER, file.filename)
         file.save(file_path)
         # Save file information to MongoDB
-        db.device_files.insert_one({"device_id": ObjectId(device_id), "filename": file.filename})
+        db.device_files.insert_one(
+            {"device_id": ObjectId(device_id), "filename": file.filename}
+        )
         flash("File uploaded successfully")
     return redirect(url_for("light.index"))
 
 
 @light.route("/remove", methods=["POST"])
-def remove_file():
+@token_required
+def remove_file(current_user):
     device_id = request.form.get("device_id")
     file_to_remove = request.form.get("file_to_remove")
     # Remove file from the server
@@ -118,7 +131,8 @@ def remove_file():
     if os.path.exists(file_path):
         os.remove(file_path)
         # Remove file information from MongoDB
-        db.device_files.delete_one({"device_id": ObjectId(device_id), "filename": file_to_remove})
+        db.device_files.delete_one(
+            {"device_id": ObjectId(device_id), "filename": file_to_remove}
+        )
         flash("File removed successfully")
     return redirect(url_for("light.index"))
-

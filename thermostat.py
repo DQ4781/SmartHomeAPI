@@ -6,20 +6,22 @@ from flask import (
     url_for,
     session,
     jsonify,
-    abort
+    abort,
 )
 from pymongo import MongoClient
 from bson import ObjectId
-import logging 
+from jwt_token import token_required
 
 thermostat = Blueprint("thermostat", __name__, url_prefix="/thermostat")
 
 # Connect to MongoDB
 client = MongoClient("mongodb://localhost:27017/")
-db = client.smart_home 
+db = client.smart_home
+
 
 @thermostat.route("/")
-def index():
+@token_required
+def index(current_user):
     current_user_id = session.get("user_id")
     # Query MongoDB for thermostat devices
     devices = list(db.thermostat_devices.find({"user_id": current_user_id}))
@@ -27,7 +29,8 @@ def index():
 
 
 @thermostat.route("/add", methods=["POST"])
-def add_device():
+@token_required
+def add_device(current_user):
     if request.is_json:
         data = request.json
         room = data.get("room")
@@ -43,8 +46,10 @@ def add_device():
     else:
         return redirect(url_for("thermostat.index"))
 
+
 @thermostat.route("/update", methods=["POST"])
-def update_device():
+@token_required
+def update_device(current_user):
     if request.is_json:
         data = request.json
         device_id = data.get("device_id")
@@ -61,9 +66,11 @@ def update_device():
         return jsonify({"message": "Thermostat device updated successfully"}), 200
     else:
         return redirect(url_for("thermostat.index"))
-    
+
+
 @thermostat.route("/delete", methods=["POST"])
-def delete_device():
+@token_required
+def delete_device(current_user):
     if request.is_json:
         data = request.json
         device_id = data.get("device_id")
